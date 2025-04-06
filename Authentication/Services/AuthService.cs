@@ -7,13 +7,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Authentication.Services
 {
     public class AuthService(UserDbContext context, IConfiguration configuration) : IAuthService
     {
-        public async Task<string?> LoginAsync(UserDto request)
+        public async Task<TokenResponseDto?> LoginAsync(UserDto request)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
             if (user is null)
@@ -25,7 +26,16 @@ namespace Authentication.Services
                 return null;
             }
 
-            return CreateToken(user);
+            return await CreateTokenResponse(user);
+        }
+
+        private async Task<TokenResponseDto> CreateTokenResponse(User user)
+        {
+            return new TokenResponseDto
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
+            };
         }
 
         public async Task<User?> RegisterAsync(UserDto request)
@@ -47,12 +57,53 @@ namespace Authentication.Services
             return user;
         }
 
+        private async Task<User?> ValidateRefreshTokenAsync(Guid userid, string refreshToken)
+        {
+            var user = await context.Users.FindAsync(userid);
+            if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return null;
+            }
+
+            return user;
+        }
+
+        public async Task<TokenResponseDto?> RefreshTokensAsync(RefreshTokenRequestDto request)
+        {
+            var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
+            if (user is null)
+            {
+                return null;
+            }
+
+            return await CreateTokenResponse(user);
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
+        {
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await context.SaveChangesAsync();
+            return refreshToken;
+        }
+
+
         private string CreateToken(User user)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var key = new SymmetricSecurityKey(
@@ -64,7 +115,7 @@ namespace Authentication.Services
                 issuer: configuration.GetValue<string>("AppSettings:Issuer"),
                 audience: configuration.GetValue<string>("AppSettings:Audience"),
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: DateTime.Now.AddMinutes(15),
                 signingCredentials: creds
                 );
 
