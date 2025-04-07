@@ -1,8 +1,14 @@
+using OurLasalle.ApiClients;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddSession();
+builder.Services.AddHttpClient<AuthServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("AuthApiBaseUrl"));
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
