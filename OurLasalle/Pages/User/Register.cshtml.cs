@@ -6,7 +6,7 @@ using OurLasalle.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace OurLasalle.Pages
+namespace OurLasalle.Pages.User
 {
     public class RegisterModel : PageModel
     {

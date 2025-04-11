@@ -1,0 +1,52 @@
+﻿@page
+@using System.Security.Claims
+@model OurLasalle.Pages.Courses.AllCoursesModel
+@{
+    ViewData["Title"] = "Courses";
+    bool isTeacher = User.IsInRole("Teacher");
+    string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+}
+<h1>Courses</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Currently Enrolled</th>
+            <th>Capacity</th>
+            <th>Teacher Id</th>
+            @if (!isTeacher)
+            {
+                <th>Actions</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model.Courses)
+        {
+            <tr>
+                <td>@course.Name</td>
+                <td>@course.Students.Count</td>
+                <td>@course.Capacity</td>
+                <td>@course.TeacherId</td>
+                <td>
+                    @if (course.Students.Any(s => s.Id == Guid.Parse(userId)) && !isTeacher)
+                    {
+                        <span>Enrolled</span>
+                    }
+                    else if (!isTeacher && course.Students.Count < course.Capacity)
+                    {
+                        <form method="post" asp-page-handler="Enroll">
+                            <input type="hidden" name="courseId" value="@course.Id" />
+                            <button type="submit" class="btn btn-primary">Enroll</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (isTeacher)
+{
+    <a asp-page="/Courses/AddCourse" class="btn btn-primary">Add Course</a>
+}

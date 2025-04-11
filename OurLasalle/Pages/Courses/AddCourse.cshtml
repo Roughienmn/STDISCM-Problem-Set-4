@@ -1,0 +1,21 @@
+﻿@page
+@model OurLasalle.Pages.Courses.AddCourseModel
+@{
+    ViewData["Title"] = "Create Course";
+}
+<h1>Create Course</h1>
+
+<form method="post">
+    <div class="form-group">
+        <label asp-for="CreateCourseRequest.Name" class="control-label"></label>
+        <input asp-for="CreateCourseRequest.Name" class="form-control" />
+        <span asp-validation-for="CreateCourseRequest.Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="CreateCourseRequest.Capacity" class="control-label"></label>
+        <input asp-for="CreateCourseRequest.Capacity" class="form-control" />
+        <span asp-validation-for="CreateCourseRequest.Capacity" class="text-danger"></span>
+    </div>
+    <input type="hidden" asp-for="CreateCourseRequest.TeacherId" />
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

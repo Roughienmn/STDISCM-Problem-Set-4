@@ -1,20 +1,24 @@
 ﻿@page
-@model LoginModel
+@model OurLasalle.Pages.LoginModel
 @{
     ViewData["Title"] = "Login";
 }
 
-<h2>Logineddd</h2>
+<h2>Login</h2>
 
 <form method="post">
     <div>
-        <label asp-for="Username"></label>
-        <input asp-for="Username" />
+        <label asp-for="UserDto.Username"></label>
+        <input asp-for="UserDto.Username" />
     </div>
     <div>
-        <label asp-for="Password"></label>
-        <input asp-for="Password" type="password" />
+        <label asp-for="UserDto.Password"></label>
+        <input asp-for="UserDto.Password" type="password" />
     </div>
     <button type="submit">Login</button>
     <div style="color: red">@Model.ErrorMessage</div>
 </form>
+
+<div>
+    <button onclick="location.href='@Url.Page("/User/Register")'">Register</button>
+</div>

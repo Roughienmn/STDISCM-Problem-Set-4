@@ -19,7 +19,7 @@ namespace Courses.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult<Course>> CreateCourse(CreateCourseRequest request)
+        public async Task<ActionResult<CourseDto>> CreateCourse(CreateCourseRequest request)
         {
             var course = await courseService.CreateCourseAsync(request);
             if (course is null)
@@ -55,7 +55,7 @@ namespace Courses.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<CourseDto>>> GetAllCourses()
+        public async Task<ActionResult<List<CourseDto>>> GetAllCourses()
         {
             var courses = await courseService.GetAllCoursesAsync();
             return Ok(courses);

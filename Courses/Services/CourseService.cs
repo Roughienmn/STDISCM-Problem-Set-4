@@ -14,7 +14,7 @@ namespace Courses.Services
             this.context = context;
         }
 
-        public async Task<Course?> CreateCourseAsync(CreateCourseRequest request)
+        public async Task<CourseDto?> CreateCourseAsync(CreateCourseRequest request)
         {
             if (await context.Courses.AnyAsync(c => c.Name == request.Name))
             {
@@ -31,10 +31,17 @@ namespace Courses.Services
             context.Courses.Add(course);
             await context.SaveChangesAsync();
 
-            return course;
+            return new CourseDto
+            {
+                Id = course.Id,
+                Name = course.Name,
+                Capacity = course.Capacity,
+                TeacherId = course.TeacherId,
+                Students = new List<StudentDto>()
+            };
         }
 
-        public async Task<IEnumerable<CourseDto>> GetAllCoursesAsync()
+        public async Task<List<CourseDto>> GetAllCoursesAsync()
         {
             return await context.Courses
                 .Include(c => c.Students)

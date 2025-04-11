@@ -1,53 +1,66 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
+using OurLasalle.ApiClients;
+using OurLasalle.Models;
 using System.Threading.Tasks;
 
-public class LoginModel : PageModel
+namespace OurLasalle.Pages
 {
-    [BindProperty]
-    public string Username { get; set; }
-    [BindProperty]
-    public string Password { get; set; }
-
-    public string ErrorMessage { get; set; }
-
-    public async Task<IActionResult> OnPostAsync()
+    public class LoginModel : PageModel
     {
-        var client = new HttpClient();
-        var loginPayload = new
+        private readonly AuthServiceClient _authServiceClient;
+
+        public LoginModel(AuthServiceClient authServiceClient)
         {
-            username = Username,
-            password = Password
-        };
+            _authServiceClient = authServiceClient;
+        }
 
-        var json = JsonSerializer.Serialize(loginPayload);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        [BindProperty]
+        public UserDto UserDto { get; set; }
 
-        var response = await client.PostAsync("http://localhost:5000/api/auth/login", content); // Replace with your actual Auth API URL
+        public string ErrorMessage { get; set; }
 
-        if (!response.IsSuccessStatusCode)
+        public async Task<IActionResult> OnGetAsync()
         {
-            ErrorMessage = "Invalid username or password.";
+            if (HttpContext.Request.Cookies.ContainsKey("AccessToken") && HttpContext.Request.Cookies.ContainsKey("RefreshToken"))
+            {
+                return RedirectToPage("/Home");
+            }
+
             return Page();
         }
 
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var tokenResult = JsonSerializer.Deserialize<TokenResponseDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
 
-        // You can now store the token in a cookie or session
-        HttpContext.Session.SetString("AccessToken", tokenResult.AccessToken);
-        HttpContext.Session.SetString("RefreshToken", tokenResult.RefreshToken);
+            var tokenResponse = await _authServiceClient.LoginAsync(UserDto);
+            if (tokenResponse == null)
+            {
+                ErrorMessage = "Invalid login attempt.";
+                return Page();
+            }
 
-        return RedirectToPage("/Index");
-    }
+            // Store the token in an HTTP cookie
+            HttpContext.Response.Cookies.Append("AccessToken", tokenResponse.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
 
-    public class TokenResponseDto
-    {
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
+            HttpContext.Response.Cookies.Append("RefreshToken", tokenResponse.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+
+            // Redirect to the home page after successful login
+            return RedirectToPage("/Home");
+        }
     }
 }
