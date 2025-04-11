@@ -12,30 +12,54 @@ namespace OurLasalle.ApiClients
 
         public async Task<TokenResponseDto?> LoginAsync(UserDto userDto)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Auth/login", userDto);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return await response.Content.ReadFromJsonAsync<TokenResponseDto>();
+                var response = await _httpClient.PostAsJsonAsync("api/Auth/login", userDto);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<TokenResponseDto>();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as needed
+                Console.WriteLine($"Error in LoginAsync: {ex.Message}");
             }
             return null;
         }
 
         public async Task<User?> RegisterAsync(UserDto userDto)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Auth/register", userDto);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return await response.Content.ReadFromJsonAsync<User>();
+                var response = await _httpClient.PostAsJsonAsync("api/Auth/register", userDto);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<User>();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as needed
+                Console.WriteLine($"Error in RegisterAsync: {ex.Message}");
             }
             return null;
         }
 
         public async Task<TokenResponseDto?> RefreshTokensAsync(RefreshTokenRequestDto refreshTokenRequestDto)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Auth/refresh", refreshTokenRequestDto);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return await response.Content.ReadFromJsonAsync<TokenResponseDto>();
+                var response = await _httpClient.PostAsJsonAsync("api/Auth/refresh", refreshTokenRequestDto);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<TokenResponseDto>();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as needed
+                Console.WriteLine($"Error in RefreshTokensAsync: {ex.Message}");
             }
             return null;
         }
