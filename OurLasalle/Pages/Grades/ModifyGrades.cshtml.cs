@@ -25,6 +25,8 @@ namespace OurLasalle.Pages.Grades
 
         public string CourseName { get; set; } = string.Empty;
 
+        public bool isTeacherOfCourse;
+
         public async Task OnGetAsync()
         {
             if (CourseId == Guid.Empty)
@@ -32,9 +34,21 @@ namespace OurLasalle.Pages.Grades
                 ModelState.AddModelError(string.Empty, "Invalid course ID.");
                 return;
             }
+            var teacherId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var coursesOfTeacher = await _courseServiceClient.GetCoursesByTeacherIdAsync(Guid.Parse(teacherId));
+            var course = coursesOfTeacher.FirstOrDefault(c => c.Id == CourseId);
 
-            // Fetch students for the course
-            var students = await _courseServiceClient.GetStudentsByCourseIdAsync(CourseId);
+            if (course == null)
+            {
+                isTeacherOfCourse = false;
+            }
+            else
+            {
+                isTeacherOfCourse = true;
+            }
+
+                // Fetch students for the course
+                var students = await _courseServiceClient.GetStudentsByCourseIdAsync(CourseId);
 
             // Fetch grades for the course
             Grades = await _gradeServiceClient.GetGradesByCourseIdAsync(CourseId);

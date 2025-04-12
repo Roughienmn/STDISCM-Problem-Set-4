@@ -1,8 +1,10 @@
 ﻿@page "{courseId:guid}"
 @using OurLasalle.Models
+@using System.Security.Claims
 @model OurLasalle.Pages.Grades.ModifyGradesModel
 @{
     ViewData["Title"] = "Modify Grades";
+    string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 }
 
 <h1>Modify Grades</h1>
@@ -21,7 +23,10 @@
             <tr>
                 <th>Student Id</th>
                 <th>Current Grade</th>
-                <th>New Grade</th>
+                @if (Model.isTeacherOfCourse)
+                {
+                    <th>New Grade</th>
+                }
             </tr>
         </thead>
 
@@ -37,15 +42,18 @@
                     <tr>
                         <td>@grade.StudentId</td>
                         <td>@grade.GPA</td>
-                        <td>
-                            <input type="number" class="form-control" name="grades[@grade.StudentId]" value="@grade.GPA" min="0" max="100" placeholder="0" />
-                        </td>
+                        @if (Model.isTeacherOfCourse)
+                        {
+                            <td>
+                                <input type="number" class="form-control" name="grades[@grade.StudentId]" value="@grade.GPA" min="0" max="100" placeholder="0" />
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
         }
     </table>
-    @if (Model.Grades != null && Model.Grades.Any())
+    @if (Model.Grades != null && Model.Grades.Any() && Model.isTeacherOfCourse)
     {
         <button type="submit" class="btn btn-primary">Save Changes</button>
     }
