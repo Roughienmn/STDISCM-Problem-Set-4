@@ -1,0 +1,67 @@
+﻿@page "{courseId:guid}"
+@using OurLasalle.Models
+@model OurLasalle.Pages.Grades.ModifyGradesModel
+@{
+    ViewData["Title"] = "Modify Grades";
+}
+
+<h1>Modify Grades</h1>
+<h2>Course: @Model.CourseName</h2>
+
+@if (TempData.Peek("SuccessMessage") != null)
+{
+    <div id="success-alert" class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<form method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Student Id</th>
+                <th>Current Grade</th>
+                <th>New Grade</th>
+            </tr>
+        </thead>
+
+        @if (Model.Grades == null || !Model.Grades.Any())
+        {
+            <p>No students enrolled.</p>
+        }
+        else 
+        {
+            <tbody>
+                @foreach (var grade in Model.Grades)
+                {
+                    <tr>
+                        <td>@grade.StudentId</td>
+                        <td>@grade.GPA</td>
+                        <td>
+                            <input type="number" class="form-control" name="grades[@grade.StudentId]" value="@grade.GPA" min="0" max="100" placeholder="0" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+    @if (Model.Grades != null && Model.Grades.Any())
+    {
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    }
+
+</form>
+
+<br />
+
+@section Scripts {
+    <script>
+        // Automatically hide the success alert after 3 seconds
+        const successAlert = document.getElementById('success-alert');
+        if (successAlert) {
+            setTimeout(() => {
+                successAlert.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+}

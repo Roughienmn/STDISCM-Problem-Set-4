@@ -54,6 +54,28 @@ namespace Courses.Controllers
             return Ok(course);
         }
 
+        [HttpGet("teacher/{teacherId}")]
+        public async Task<ActionResult<List<CourseDto>>> GetCoursesByTeacherId(Guid teacherId)
+        {
+            var courses = await courseService.GetCoursesByTeacherIdAsync(teacherId);
+            if (courses == null || !courses.Any())
+            {
+                return NotFound("No courses found for the specified teacher.");
+            }
+            return Ok(courses);
+        }
+
+        [HttpGet("course/{courseId}/students")]
+        public async Task<ActionResult<List<StudentDto>>> GetStudentsByCourseId(Guid courseId)
+        {
+            var course = await courseService.GetCourseByIdAsync(courseId);
+            if (course == null)
+            {
+                return NotFound("Course not found.");
+            }
+            return Ok(course.Students);
+        }
+
         [HttpGet("all")]
         public async Task<ActionResult<List<CourseDto>>> GetAllCourses()
         {

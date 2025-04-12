@@ -82,6 +82,25 @@ namespace Courses.Services
             };
         }
 
+        public async Task<List<CourseDto>> GetCoursesByTeacherIdAsync(Guid teacherId)
+        {
+            return await context.Courses
+                .Where(c => c.TeacherId == teacherId)
+                .Select(c => new CourseDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Capacity = c.Capacity,
+                    TeacherId = c.TeacherId,
+                    Students = c.Students.Select(s => new StudentDto
+                    {
+                        Id = s.Id
+                    }).ToList()
+                })
+                .ToListAsync();
+        }
+
+
         public async Task<bool> EnrollStudentAsync(EnrollRequestDto request)
         {
             var courseId = request.CourseId;

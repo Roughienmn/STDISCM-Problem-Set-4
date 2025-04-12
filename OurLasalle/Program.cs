@@ -19,6 +19,10 @@ builder.Services.AddHttpClient<CourseServiceClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("CourseApiBaseUrl"));
 });
+builder.Services.AddHttpClient<GradeServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("GradeApiBaseUrl"));
+});
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

@@ -1,0 +1,57 @@
+﻿@page
+@using System.Security.Claims
+@model OurLasalle.Pages.Grades.StudentGradesModel
+@{
+    ViewData["Title"] = "Grades";
+    bool isTeacher = User.IsInRole("Teacher");
+    string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+}
+<h1>@ViewData["Title"]</h1>
+
+@if (isTeacher)
+{
+    <h2>Your Courses</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Course Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var course in Model.Courses)
+            {
+                <tr>
+                    <td>@course.Name</td>
+                    <td>
+                        <!-- Redirect to ModifyGrades page with courseId -->
+                        <a asp-page="/Grades/ModifyGrades" asp-route-courseId="@course.Id" class="btn btn-primary">View Grades</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h2>Your Grades</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Course Name</th>
+                <th>Grade</th>
+                <th>Teacher</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var grade in Model.Grades)
+            {
+                <tr>
+                    <td>@grade.CourseName</td>
+                    <td>@grade.GPA</td>
+                    <td>@grade.TeacherId</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
